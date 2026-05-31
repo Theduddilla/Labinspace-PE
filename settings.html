@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OmniTest CDN — Settings</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <style>
+    .provider-card {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 18px 20px;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .provider-card:hover { border-color: var(--border2); }
+    .provider-card.active { border-color: rgba(99,120,255,0.5); background: rgba(99,120,255,0.06); box-shadow: 0 0 20px rgba(99,120,255,0.08); }
+    .provider-card-name { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+    .provider-card-desc { font-size: 12px; color: var(--muted); }
+    .provider-tag { font-size: 10px; padding: 2px 8px; border-radius: 99px; margin-top: 8px; display: inline-block; }
+    .tag-free { background: rgba(52,211,153,0.12); color: var(--green); border: 1px solid rgba(52,211,153,0.2); }
+    .tag-local { background: rgba(56,189,248,0.12); color: var(--accent3); border: 1px solid rgba(56,189,248,0.2); }
+    .tag-cloud { background: rgba(167,139,250,0.12); color: var(--accent2); border: 1px solid rgba(167,139,250,0.2); }
+    .provider-fields { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); }
+    .key-hint { font-size: 11px; color: var(--muted); margin-top: 6px; }
+    .key-hint a { color: var(--accent); text-decoration: none; }
+    .key-hint a:hover { text-decoration: underline; }
+    input[type="password"] { font-family: var(--font-mono); letter-spacing: 2px; }
+  </style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar"></aside>
+
+  <main class="main-content">
+    <div class="page-header">
+      <h1>Settings</h1>
+      <p>Configure your LLM provider and test parameters</p>
+    </div>
+
+    <input type="hidden" id="provider-input" value="groq">
+
+    <!-- LLM Provider Selection -->
+    <div class="panel" style="margin-bottom:20px;">
+      <div class="panel-header"><span class="panel-title">AI Provider</span></div>
+      <div class="panel-body">
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;">
+
+          <div class="provider-card" data-provider="groq">
+            <div class="provider-card-name">⚡ Groq</div>
+            <div class="provider-card-desc">Llama3, Mixtral via Groq Cloud. Fastest inference available.</div>
+            <span class="provider-tag tag-free">Free tier available</span>
+          </div>
+
+          <div class="provider-card" data-provider="ollama">
+            <div class="provider-card-name">🦙 Ollama</div>
+            <div class="provider-card-desc">Run Llama3, Mistral, Phi-3 locally. 100% private, no API key needed.</div>
+            <span class="provider-tag tag-local">Local / Private</span>
+          </div>
+
+          <div class="provider-card" data-provider="openai">
+            <div class="provider-card-name">◎ OpenAI</div>
+            <div class="provider-card-desc">GPT-4o Mini or GPT-4o for maximum accuracy.</div>
+            <span class="provider-tag tag-cloud">Paid</span>
+          </div>
+
+          <div class="provider-card" data-provider="claude">
+            <div class="provider-card-name">✦ Claude</div>
+            <div class="provider-card-desc">Anthropic Claude Haiku/Sonnet. Excellent for technical analysis.</div>
+            <span class="provider-tag tag-cloud">Paid</span>
+          </div>
+        </div>
+
+        <!-- Provider-specific fields -->
+        <div class="provider-fields">
+
+          <!-- Groq -->
+          <div id="fields-groq">
+            <div class="llm-config-grid">
+              <div class="form-group">
+                <label class="form-label">Groq API Key</label>
+                <input type="password" id="groq-key" placeholder="gsk_…">
+                <div class="key-hint">Free at <a href="https://console.groq.com" target="_blank">console.groq.com</a> — no credit card required</div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Model</label>
+                <select id="groq-model">
+                  <option value="llama3-8b-8192">Llama 3 8B (fastest)</option>
+                  <option value="llama3-70b-8192">Llama 3 70B (smarter)</option>
+                  <option value="mixtral-8x7b-32768">Mixtral 8x7B (32k ctx)</option>
+                  <option value="gemma-7b-it">Gemma 7B</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Ollama -->
+          <div id="fields-ollama" style="display:none;">
+            <div class="llm-config-grid">
+              <div class="form-group">
+                <label class="form-label">Ollama URL</label>
+                <input type="text" id="ollama-url" placeholder="http://localhost:11434">
+                <div class="key-hint">Run <code class="code">ollama serve</code> locally. Install from <a href="https://ollama.com" target="_blank">ollama.com</a></div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Model</label>
+                <input type="text" id="ollama-model" placeholder="llama3:8b">
+                <div class="key-hint">Pull with <code class="code">ollama pull llama3:8b</code></div>
+              </div>
+            </div>
+            <div style="margin-top:16px;padding:14px;background:rgba(56,189,248,0.05);border:1px solid rgba(56,189,248,0.15);border-radius:12px;font-size:12px;color:var(--muted);">
+              ℹ️ For Ollama to work from this browser, you need CORS enabled: <code class="code">OLLAMA_ORIGINS=* ollama serve</code>
+            </div>
+          </div>
+
+          <!-- OpenAI -->
+          <div id="fields-openai" style="display:none;">
+            <div class="llm-config-grid">
+              <div class="form-group">
+                <label class="form-label">OpenAI API Key</label>
+                <input type="password" id="openai-key" placeholder="sk-…">
+                <div class="key-hint">From <a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com</a></div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Model</label>
+                <select id="openai-model">
+                  <option value="gpt-4o-mini">GPT-4o Mini (cheap)</option>
+                  <option value="gpt-4o">GPT-4o (best)</option>
+                  <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Claude -->
+          <div id="fields-claude" style="display:none;">
+            <div class="llm-config-grid">
+              <div class="form-group">
+                <label class="form-label">Anthropic API Key</label>
+                <input type="password" id="claude-key" placeholder="sk-ant-…">
+                <div class="key-hint">From <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a></div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Model</label>
+                <select id="claude-model">
+                  <option value="claude-haiku-3-5-20241022">Claude Haiku 3.5 (fast)</option>
+                  <option value="claude-sonnet-4-5">Claude Sonnet 4.5</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /provider-fields -->
+
+        <div style="display:flex;gap:12px;margin-top:24px;">
+          <button id="test-btn" class="btn btn-secondary">⚡ Test Connection</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Test Parameters -->
+    <div class="settings-grid">
+      <div class="settings-section">
+        <h3>Test Parameters</h3>
+        <div class="setting-row">
+          <label class="form-label">Alert Threshold (ms)</label>
+          <input type="number" id="alert-threshold" value="500" min="50" max="5000">
+        </div>
+        <div class="setting-row">
+          <label class="form-label">Default Iterations</label>
+          <input type="number" id="iterations" value="10" min="1" max="100">
+        </div>
+        <div class="setting-row">
+          <label class="form-label">SLA P95 Target (ms) <span style="color:var(--accent3);font-size:10px;">NEW</span></label>
+          <input type="number" id="sla-p95" value="400" min="50" max="5000">
+          <div class="key-hint">Regions exceeding this trigger SLA breach + alert</div>
+        </div>
+        <div class="setting-row">
+          <label class="form-label">SLA Availability Target (%) <span style="color:var(--accent3);font-size:10px;">NEW</span></label>
+          <input type="number" id="sla-avail" value="99.9" min="90" max="100" step="0.1">
+        </div>
+      </div>
+      <div class="settings-section">
+        <h3>About Open Source LLMs</h3>
+        <p style="font-size:13px;color:var(--muted);line-height:1.7;">
+          OmniTest v2 supports multiple LLM backends. <strong>Groq</strong> is recommended for speed — 
+          it runs Llama3 at 600+ tokens/second for free. <strong>Ollama</strong> keeps everything 
+          local and private. All AI analysis stays in your browser — no data sent to Anthropic servers.
+        </p>
+      </div>
+    </div>
+
+    <div class="settings-actions">
+      <button id="save-btn" class="btn btn-primary">Save Settings</button>
+      <button id="reset-btn" class="btn btn-ghost">Reset Defaults</button>
+    </div>
+
+  </main>
+</div>
+
+<script src="/js/shared.js"></script>
+<script src="/js/sidebar.js"></script>
+<script src="/js/settings.js"></script>
+</body>
+</html>
