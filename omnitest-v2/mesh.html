@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OmniTest CDN — Mesh Analysis</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <script src="https://cdn.plot.ly/plotly-2.27.0.min.js" defer></script>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar"></aside>
+
+  <main class="main-content">
+    <div class="page-header">
+      <h1>Mesh Analysis</h1>
+      <p>Hop-by-hop network tracing with AI bottleneck detection</p>
+    </div>
+
+    <div class="controls-bar">
+      <div class="input-wrap" style="flex:2;min-width:240px;">
+        <span class="input-icon">◎</span>
+        <input type="text" id="dest-host" placeholder="ihcm.adp.com or 23.44.231.10" value="ihcm.adp.com">
+      </div>
+      <div class="form-group" style="min-width:200px;">
+        <select id="source-region">
+          <option value="usa">🇺🇸 USA (Newark)</option>
+          <option value="india">🇮🇳 India (Mumbai)</option>
+          <option value="uk">🇬🇧 UK (London)</option>
+          <option value="germany">🇩🇪 Germany (Frankfurt)</option>
+          <option value="australia">🇦🇺 Australia (Sydney)</option>
+          <option value="japan">🇯🇵 Japan (Tokyo)</option>
+          <option value="singapore">🇸🇬 Singapore</option>
+        </select>
+      </div>
+      <button id="trace-path" class="btn btn-primary">⬡ Trace Path</button>
+      <button id="trace-mesh" class="btn btn-secondary">◎ Trace All Regions</button>
+    </div>
+
+    <!-- Hop Diagram -->
+    <div class="panel">
+      <div class="panel-header"><span class="panel-title">Hop Timeline</span></div>
+      <div class="hop-diagram">
+        <div class="hop-timeline" id="hop-timeline">
+          <div style="padding:40px;text-align:center;color:var(--muted);font-size:13px;">Enter a destination and click Trace Path</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottleneck analysis -->
+    <div id="bottleneck-analysis"></div>
+
+    <!-- AI analysis -->
+    <div id="mesh-ai"></div>
+
+    <!-- Multi-region comparison chart -->
+    <div class="panel">
+      <div class="panel-header"><span class="panel-title">Multi-Region Comparison</span></div>
+      <div class="panel-body">
+        <div id="comparison-chart" style="height:360px;"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="/js/shared.js"></script>
+<script src="/js/sidebar.js"></script>
+<script src="/js/mesh.js"></script>
+</body>
+</html>

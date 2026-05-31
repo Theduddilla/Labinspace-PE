@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OmniTest CDN — Dashboard</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <script src="https://cdn.plot.ly/plotly-2.27.0.min.js" defer></script>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar"></aside>
+  <main class="main-content">
+
+    <div class="page-header">
+      <h1>Performance Dashboard</h1>
+      <p>Regional Edge · Cache · Failover · Consistency · SLA — all in one test</p>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls-bar">
+      <div class="input-wrap" style="flex:2;min-width:240px;">
+        <span class="input-icon">◎</span>
+        <input type="text" id="target-host" placeholder="ihcm.adp.com" value="ihcm.adp.com">
+      </div>
+      <div style="flex:3;">
+        <div class="region-pills">
+          <span class="region-pill" data-region="usa">🇺🇸 USA</span>
+          <span class="region-pill" data-region="india">🇮🇳 India</span>
+          <span class="region-pill" data-region="uk">🇬🇧 UK</span>
+          <span class="region-pill" data-region="germany">🇩🇪 Germany</span>
+          <span class="region-pill" data-region="japan">🇯🇵 Japan</span>
+          <span class="region-pill" data-region="singapore">🇸🇬 Singapore</span>
+          <span class="region-pill" data-region="australia">🇦🇺 Australia</span>
+          <span class="region-pill" data-region="brazil">🇧🇷 Brazil</span>
+          <span class="region-pill" data-region="canada">🇨🇦 Canada</span>
+        </div>
+      </div>
+      <button id="run-test" class="btn btn-primary">▶ Run Test</button>
+    </div>
+
+    <!-- Top stats -->
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-label">Global P95 Latency</div><div class="stat-value" id="stat-latency">—</div><div class="stat-delta">Across selected regions</div></div>
+      <div class="stat-card"><div class="stat-label">Avg Cache Hit</div><div class="stat-value" id="stat-cache">—</div><div class="stat-delta">Edge vs origin serve ratio</div></div>
+      <div class="stat-card"><div class="stat-label">SLA Breaches</div><div class="stat-value" id="stat-sla">—</div><div class="stat-delta">Regions outside SLA target</div></div>
+      <div class="stat-card"><div class="stat-label">Avg SSL Latency</div><div class="stat-value" id="stat-ssl">—</div><div class="stat-delta">TLS handshake time</div></div>
+      <div class="stat-card"><div class="stat-label">Origin Shielded</div><div class="stat-value" id="stat-shield">—</div><div class="stat-delta">Regions with Origin Shield</div></div>
+      <div class="stat-card"><div class="stat-label">Alerts Triggered</div><div class="stat-value" id="stat-alerts">—</div><div class="stat-delta">P1 / P2 / P3 alerts</div></div>
+    </div>
+
+    <!-- AI Panel -->
+    <div class="ai-panel">
+      <div class="ai-panel-header">
+        <div class="ai-avatar">✦</div>
+        <div>
+          <div class="ai-panel-title">OmniTest AI</div>
+          <div class="ai-panel-subtitle" id="ai-provider-label">Powered by open-source LLM</div>
+        </div>
+        <div style="margin-left:auto;"><button class="btn btn-ghost btn-sm" onclick="document.getElementById('ai-messages').innerHTML=''">Clear</button></div>
+      </div>
+      <div class="ai-messages" id="ai-messages"></div>
+      <div class="quick-chips">
+        <span class="chip" data-q="Which regions have SLA breaches and what's causing them?">SLA breaches</span>
+        <span class="chip" data-q="How is Origin Shield performing? Which regions need it enabled?">Origin Shield</span>
+        <span class="chip" data-q="Are cache keys fragmented? How to fix consistency issues?">Cache consistency</span>
+        <span class="chip" data-q="Which regions have failover risks? Check edge and origin health.">Failover risk</span>
+        <span class="chip" data-q="What's the SSL latency breakdown? Any TLS optimisation opportunities?">SSL latency</span>
+        <span class="chip" data-q="Summarise the cache propagation delays and request coalescing status.">Propagation & coalescing</span>
+      </div>
+      <div class="ai-input-bar">
+        <input type="text" id="ai-input" placeholder="Ask about your CDN performance…">
+        <button id="ai-send" class="btn btn-primary btn-sm">Send</button>
+      </div>
+    </div>
+
+    <!-- Results tabs -->
+    <div class="panel" id="results-panel" style="display:none;">
+      <div class="panel-header">
+        <div class="tabs" style="border:none;margin:0;">
+          <span class="tab active" data-tab="edge">Edge Performance</span>
+          <span class="tab" data-tab="cache">Cache & Origin</span>
+          <span class="tab" data-tab="failover">Load & Failover</span>
+          <span class="tab" data-tab="consistency">Consistency</span>
+          <span class="tab" data-tab="sla">SLA & Observability</span>
+        </div>
+      </div>
+
+      <!-- Tab: Edge Performance (Cat 1) -->
+      <div class="tab-pane" id="pane-edge">
+        <div class="panel-body" style="padding:0;">
+          <div class="table-wrap"><table>
+            <thead><tr><th>Region</th><th>P95 Latency</th><th>DNS</th><th>TCP</th><th>SSL/TLS ⭐</th><th>TTFB</th><th>Edge IP</th><th>Affinity</th><th>Grade</th></tr></thead>
+            <tbody id="tbl-edge"><tr class="empty-row"><td colspan="9">Run a test to see results</td></tr></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- Tab: Cache & Origin (Cat 2) -->
+      <div class="tab-pane" id="pane-cache" style="display:none;">
+        <div class="panel-body" style="padding:0;">
+          <div class="table-wrap"><table>
+            <thead><tr><th>Region</th><th>Cache Hit%</th><th>Warm Latency</th><th>Cold (Miss)</th><th>Origin Pull ⭐</th><th>Origin Shield ⭐</th><th>Shield Reduction</th><th>Geo-Block ⭐</th></tr></thead>
+            <tbody id="tbl-cache"><tr class="empty-row"><td colspan="8">Run a test to see results</td></tr></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- Tab: Load & Failover (Cat 3) -->
+      <div class="tab-pane" id="pane-failover" style="display:none;">
+        <div class="panel-body" style="padding:0;">
+          <div class="table-wrap"><table>
+            <thead><tr><th>Region</th><th>Concurrency</th><th>Overload</th><th>Isolation ⭐</th><th>Edge Health</th><th>Edge Failover ⭐</th><th>Origin Health</th><th>Origin Failover ⭐</th><th>SWR ⭐</th></tr></thead>
+            <tbody id="tbl-failover"><tr class="empty-row"><td colspan="9">Run a test to see results</td></tr></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- Tab: Consistency (Cat 4) -->
+      <div class="tab-pane" id="pane-consistency" style="display:none;">
+        <div class="panel-body" style="padding:0;">
+          <div class="table-wrap"><table>
+            <thead><tr><th>Region</th><th>Propagation Delay ⭐</th><th>Status</th><th>Cache Key Variants ⭐</th><th>Fragmented</th><th>Coalescing ⭐</th><th>Reqs Saved/100</th><th>Stampede ✓</th></tr></thead>
+            <tbody id="tbl-consistency"><tr class="empty-row"><td colspan="8">Run a test to see results</td></tr></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- Tab: SLA & Observability (Cat 5) -->
+      <div class="tab-pane" id="pane-sla" style="display:none;">
+        <div class="panel-body" style="padding:0;">
+          <div class="table-wrap"><table>
+            <thead><tr><th>Region</th><th>Availability</th><th>SLA Target</th><th>P95 vs SLA</th><th>SLA Status ⭐</th><th>Alert Level ⭐</th><th>RUM P50</th><th>RUM P75</th><th>RUM P99</th></tr></thead>
+            <tbody id="tbl-sla"><tr class="empty-row"><td colspan="9">Run a test to see results</td></tr></tbody>
+          </table></div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script src="/js/shared.js"></script>
+<script src="/js/sidebar.js"></script>
+<script src="/js/dashboard.js"></script>
+<script>
+  window.addEventListener('load', () => {
+    const cfg = getSettings();
+    const el = document.getElementById('ai-provider-label');
+    if (el) el.textContent = `Powered by ${providerLabel(cfg.llm_provider)}`;
+  });
+</script>
+</body>
+</html>
